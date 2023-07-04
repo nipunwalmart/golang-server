@@ -1,0 +1,30 @@
+name: SimpleConcordPlaybook
+title: Simple Concord Playbook
+description: Simple Concord playbook for testing purposes
+owner: sumeet.bahadkar@walmart.com
+metadata:
+  clusterId: string
+  backupName: string
+tasks:
+  - title: Task 1
+    description: Task 1
+    type: concord
+    process:
+      org: k8s
+      project: sample-playbook-task
+      repo: default
+      entrypoint: main
+      repoBranchOrTag: main
+      arguments:
+        backupName: vbackup
+  - title: Task 2
+    description: Task 2
+    type: concord
+    process:
+      org: k8s
+      project: sample-playbook-task
+      repo: default
+      entrypoint: validate
+      repoBranchOrTag: main
+      arguments:
+        backupName: vbackup
