@@ -50,10 +50,7 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Handle pull request event
 		handlePullRequestEvent(event)
-		// default:
-		// 	fmt.Printf("Received event type: %s\n", eventType)
 	}
 
 	// Return a success response

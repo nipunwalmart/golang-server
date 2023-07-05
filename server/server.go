@@ -21,6 +21,40 @@ type PushEventPayload struct {
 	} `json:"commits"`
 }
 
+func getFileNames() ([]string, error) {
+	url := "https://api.github.com/repos/webhook-check/contents/scripts"
+
+	resp, err := http.Get(url)
+	if err != nil {
+		panic(err)
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API request failed with status: %s", resp.Status)
+	}
+
+	var files []struct {
+		Name string `json:"name"`
+		Type string `json:"type"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&files)
+	if err != nil {
+		return nil, err
+	}
+
+	var filenames []string
+	for _, file := range files {
+		if file.Type == "file" {
+			filenames = append(filenames, file.Name)
+			fmt.Println(file.Name)
+		}
+	}
+
+	return filenames, nil
+}
+
 // TODO : we need check with the commits used in PR and must be specific to PR events.
 func webhookHandler(w http.ResponseWriter, r *http.Request) {
 	event := r.Header.Get("X-GitHub-Event")
@@ -39,6 +73,11 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("failed to unmarshal : ", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
+		}
+
+		_, err2 := getFileNames()
+		if err2 != nil {
+			fmt.Println(err)
 		}
 
 		var errorList error
@@ -64,6 +103,7 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 					fmt.Println(err1)
 					continue
 				}
+				fmt.Println(content)
 
 				individualErrors := validation.ValidateYamlFile(file, content)
 				errorList = m.Append(errorList, individualErrors)
